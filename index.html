@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="as">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Life & Bills Reminder</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --bg: #f1f5f9;
+            --card: #ffffff;
+            --text: #1e293b;
+            --muted: #64748b;
+            --success: #16a34a;
+            --danger: #dc2626;
+            --warning: #d97706;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            padding-bottom: 85px;
+        }
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 18px 16px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+        }
+        header h1 {
+            font-size: 1.35rem;
+            margin-bottom: 4px;
+        }
+        #liveClock {
+            font-size: 0.9rem;
+            opacity: 0.92;
+            font-weight: 500;
+        }
+        .container {
+            max-width: 520px;
+            margin: 0 auto;
+            padding: 14px;
+        }
+        /* Water Tracker Card */
+        .water-card {
+            background: linear-gradient(135deg, #0284c7, #0369a1);
+            color: white;
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);
+        }
+        .water-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .water-header h2 {
+            font-size: 1.1rem;
+        }
+        .water-count {
+            font-size: 1.25rem;
+            font-weight: bold;
+            background: rgba(255,255,255,0.2);
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: rgba(255,255,255,0.25);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #38bdf8;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        .water-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .water-btn {
+            flex: 1;
+            padding: 9px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+        .btn-drink {
+            background: white;
+            color: #0369a1;
+        }
+        .btn-reset-water {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            flex: 0.4;
+        }
+        /* Tabs */
+        .tabs {
+            display: flex;
+            background: #e2e8f0;
+            padding: 4px;
+            border-radius: 12px;
+            margin-bottom: 14px;
+        }
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 9px;
+            border-radius: 9px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            color: var(--muted);
+            transition: 0.2s;
+        }
+        .tab.active {
+            background: white;
+            color: var(--primary);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.06);
+        }
+        /* Reminder List */
+        .reminder-item {
+            background: var(--card);
+            border-radius: 14px;
+            padding: 14px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+            border-left: 5px solid var(--primary);
+            transition: 0.2s;
+        }
+        .reminder-item.monthly {
+            border-left-color: var(--warning);
+        }
+        .reminder-item.done {
+            opacity: 0.6;
+            border-left-color: var(--success);
+        }
+        .reminder-item.done .rem-title {
+            text-decoration: line-through;
+        }
+        .rem-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+        }
+        .rem-check {
+            width: 22px;
+            height: 22px;
+            accent-color: var(--success);
+            cursor: pointer;
+        }
+        .rem-info {
+            flex: 1;
+        }
+        .rem-title {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 3px;
+        }
+        .rem-meta {
+            font-size: 0.82rem;
+            color: var(--muted);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .badge {
+            background: #eff6ff;
+            color: var(--primary);
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+        .badge.warn {
+            background: #fef3c7;
+            color: #b45309;
+        }
+        .rem-actions {
+            display: flex;
+            gap: 6px;
+        }
+        .icon-btn {
+            background: #f1f5f9;
+            border: none;
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .icon-btn.del {
+            color: var(--danger);
+            background: #fee2e2;
+        }
+        /* Floating Add Button */
+        .fab {
+            position: fixed;
+            bottom: 18px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 13px 26px;
+            border-radius: 30px;
+            font-size: 1rem;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
+            cursor: pointer;
+            z-index: 90;
+        }
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        .modal.show {
+            display: flex;
+        }
+        .modal-content {
+            background: white;
+            width: 100%;
+            max-width: 420px;
+            border-radius: 16px;
+            padding: 20px;
+        }
+        .modal-content h3 {
+            margin-bottom: 14px;
+            color: var(--primary);
+        }
+        .form-group {
+            margin-bottom: 12px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 0.88rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 0.95rem;
+        }
+        .modal-btns {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+        }
+        .modal-btns button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .btn-save {
+            background: var(--primary);
+            color: white;
+        }
+        .btn-cancel {
+            background: #e2e8f0;
+            color: var(--text);
+        }
+        .reset-day-btn {
+            width: 100%;
+            padding: 10px;
+            background: #e2e8f0;
+            border: none;
+            border-radius: 10px;
+            color: var(--text);
+            font-weight: 600;
+            margin-top: 8px;
+            cursor: pointer;
+        }
+        /* Alarm Alert Banner */
+        .alarm-banner {
+            display: none;
+            position: fixed;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 92%;
+            max-width: 480px;
+            background: #dc2626;
+            color: white;
+            padding: 16px;
+            border-radius: 14px;
+            z-index: 300;
+            box-shadow: 0 10px 25px rgba(220,38,38,0.4);
+            text-align: center;
+        }
+        .alarm-banner button {
+            margin-top: 10px;
+            background: white;
+            color: #dc2626;
+            border: none;
+            padding: 7px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>⏰ Daily Life & Bills Reminder</h1>
+    <div id="liveClock">Loading time...</div>
+</header>
+
+<div id="alarmBanner" class="alarm-banner">
+    <h3 id="alarmTitle">⏰ ৰিমাইণ্ডাৰৰ সময় হৈছে!</h3>
+    <p id="alarmDesc" style="margin-top:4px; font-size:0.95rem;"></p>
+    <button onclick="stopAlarm()">বন্ধ কৰক (Dismiss)</button>
+</div>
+
+<div class="container">
+    <!-- 12 Glasses Water Tracker -->
+    <div class="water-card">
+        <div class="water-header">
+            <h2>💧 দৈনিক পানী খোৱাৰ হিচাপ</h2>
+            <span class="water-count"><span id="waterNum">0</span> / 12 গিলাচ</span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="waterProgress"></div>
+        </div>
+        <div class="water-actions">
+            <button class="water-btn btn-drink" onclick="addWater()">+ ১ গিলাচ পানী খালোঁ</button>
+            <button class="water-btn btn-reset-water" onclick="resetWater()">Reset</button>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="tabs">
+        <div class="tab active" id="tabDaily" onclick="switchTab('daily')">☀️ দৈনিক কাম (Daily)</div>
+        <div class="tab" id="tabMonthly" onclick="switchTab('monthly')">📅 মাহিলী বিল (Monthly)</div>
+    </div>
+
+    <!-- Reminder List Container -->
+    <div id="reminderList"></div>
+
+    <button class="reset-day-btn" onclick="resetDailyChecks()">🔄 আজিৰ সকলো টিক চিহ্ন (Check) নকৈ আৰম্ভ কৰক</button>
+</div>
+
+<button class="fab" onclick="openModal()">+ নতুন ৰিমাইণ্ডাৰ</button>
+
+<!-- Add / Edit Modal -->
+<div class="modal" id="remModal">
+    <div class="modal-content">
+        <h3 id="modalHeading">নতুন ৰিমাইণ্ডাৰ যোগ কৰক</h3>
+        <input type="hidden" id="editId">
+        <div class="form-group">
+            <label>কাম বা বিলৰ নাম</label>
+            <input type="text" id="remTitle" placeholder="যেনে: গাখীৰ লোৱা, ইণ্টাৰনেট বিল...">
+        </div>
+        <div class="form-group">
+            <label>প্ৰকাৰ (Category)</label>
+            <select id="remType" onchange="toggleFormFields()">
+                <option value="daily">দৈনিক কাম (Daily)</option>
+                <option value="monthly">মাহিলী বিল / তাৰিখ (Monthly)</option>
+            </select>
+        </div>
+        <div class="form-group" id="timeGroup">
+            <label>সময় (Time)</label>
+            <input type="time" id="remTime" value="08:00">
+        </div>
+        <div class="form-group" id="dateGroup" style="display:none;">
+            <label>প্ৰতি মাহৰ কিমান তাৰিখে? (1 - 31)</label>
+            <input type="number" id="remDay" min="1" max="31" value="5">
+        </div>
+        <div class="form-group" id="amountGroup" style="display:none;">
+            <label>টকাৰ পৰিমাণ (₹ - ঐচ্ছিক)</label>
+            <input type="text" id="remAmount" placeholder="যেনে: ₹1500">
+        </div>
+        <div class="modal-btns">
+            <button class="btn-cancel" onclick="closeModal()">বাতিল</button>
+            <button class="btn-save" onclick="saveReminder()">ছেভ কৰক</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const defaultReminders = [
+        { id: 1, title: "ৰাতিপুৱা শুই উঠা (Wake Up)", type: "daily", time: "05:30", done: false },
+        { id: 2, title: "ৰাতিপুৱাৰ BP টেবলেট খোৱা", type: "daily", time: "07:30", done: false },
+        { id: 3, title: "ব্ৰেকফাষ্ট (Breakfast Time)", type: "daily", time: "08:30", done: false },
+        { id: 4, title: "দুপৰীয়াৰ আহাৰ (Lunch Time)", type: "daily", time: "13:30", done: false },
+        { id: 5, title: "সন্ধিয়াৰ চাহ / জলপান", type: "daily", time: "17:30", done: false },
+        { id: 6, title: "ৰাতিৰ আহাৰ (Dinner Time)", type: "daily", time: "20:30", done: false },
+        { id: 7, title: "ৰাতিৰ BP টেবলেট খোৱা", type: "daily", time: "21:00", done: false },
+        { id: 8, title: "শুবলৈ যোৱা সময় (Sleep Time)", type: "daily", time: "22:00", done: false },
+        
+        { id: 9, title: "ল'ৰা-ছোৱালীৰ স্কুল ফীজ (Children School Fee)", type: "monthly", day: 5, amount: "", done: false },
+        { id: 10, title: "মোবাইল কিস্তি (Mobile EMI / Kisti)", type: "monthly", day: 7, amount: "", done: false },
+        { id: 11, title: "প'ষ্ট অফিচ মাহিলী জমা (Post Office Deposit)", type: "monthly", day: 10, amount: "", done: false },
+        { id: 12, title: "কাৰেণ্ট বিল (Electricity Bill)", type: "monthly", day: 15, amount: "", done: false },
+        { id: 13, title: "মোবাইল ৰিচাৰ্জ (Mobile Recharge)", type: "monthly", day: 25, amount: "₹299", done: false },
+        { id: 14, title: "বাইক চালান / ইন্স্যুৰেন্স পৰীক্ষা", type: "monthly", day: 28, amount: "", done: false },
+        { id: 15, title: "গেছ চিলিণ্ডাৰ বুকিং (Gas Booking)", type: "monthly", day: 20, amount: "", done: false }
+    ];
+
+    let reminders = JSON.parse(localStorage.getItem('mali_reminders')) || defaultReminders;
+    let waterCount = parseInt(localStorage.getItem('mali_water')) || 0;
+    let currentTab = 'daily';
+    let lastTriggeredMinute = "";
+    let alarmInterval = null;
+
+    function saveData() {
+        localStorage.setItem('mali_reminders', JSON.stringify(reminders));
+        localStorage.setItem('mali_water', waterCount);
+    }
+
+    // Water Functions
+    function updateWaterUI() {
+        document.getElementById('waterNum').innerText = waterCount;
+        let pct = Math.min((waterCount / 12) * 100, 100);
+        document.getElementById('waterProgress').style.width = pct + '%';
+    }
+
+    function addWater() {
+        if (waterCount < 12) {
+            waterCount++;
+            saveData();
+            updateWaterUI();
+            if (waterCount === 12) {
+                alert("🎉 অভিনন্দন! আপুনি আজিৰ ১২ গিলাচ পানী সম্পূৰ্ণ কৰিলে।");
+            }
+        } else {
+            alert("আপুনি ইতিমধ্যে আজিৰ ১২ গিলাচ পানী সম্পূৰ্ণ কৰিছে!");
+        }
+    }
+
+    function resetWater() {
+        waterCount = 0;
+        saveData();
+        updateWaterUI();
+    }
+
+    // Tabs
+    function switchTab(tab) {
+        currentTab = tab;
+        document.getElementById('tabDaily').classList.toggle('active', tab === 'daily');
+        document.getElementById('tabMonthly').classList.toggle('active', tab === 'monthly');
+        renderList();
+    }
+
+    function formatTime12(time24) {
+        if (!time24) return "";
+        let [h, m] = time24.split(':');
+        h = parseInt(h);
+        let ampm = h >= 12 ? 'PM' : 'AM';
+        h = h % 12 || 12;
+        return `${h}:${m} ${ampm}`;
+    }
+
+    function renderList() {
+        const listEl = document.getElementById('reminderList');
+        listEl.innerHTML = '';
+
+        let filtered = reminders.filter(r => r.type === currentTab);
+        if (currentTab === 'daily') {
+            filtered.sort((a, b) => a.time.localeCompare(b.time));
+        } else {
+            filtered.sort((a, b) => a.day - b.day);
+        }
+
+        const todayDate = new Date().getDate();
+
+        filtered.forEach(item => {
+            const div = document.createElement('div');
+            div.className = `reminder-item ${item.type === 'monthly' ? 'monthly' : ''} ${item.done ? 'done' : ''}`;
+
+            let metaHtml = '';
+            if (item.type === 'daily') {
+                metaHtml = `<span class="badge">⏰ ${formatTime12(item.time)}</span>`;
+            } else {
+                let dueNote = item.day === todayDate ? ' (আজি তাৰিখ!)' : '';
+                metaHtml = `<span class="badge warn">📅 প্ৰতি মাহৰ ${item.day} তাৰিখ${dueNote}</span>`;
+                if (item.amount) {
+                    metaHtml += `<span class="badge">💰 ${item.amount}</span>`;
+                }
+            }
+
+            div.innerHTML = `
+                <div class="rem-left">
+                    <input type="checkbox" class="rem-check" ${item.done ? 'checked' : ''} onchange="toggleDone(${item.id})">
+                    <div class="rem-info">
+                        <div class="rem-title">${item.title}</div>
+                        <div class="rem-meta">${metaHtml}</div>
+                    </div>
+                </div>
+                <div class="rem-actions">
+                    <button class="icon-btn" onclick="editReminder(${item.id})">✏️</button>
+                    <button class="icon-btn del" onclick="deleteReminder(${item.id})">🗑️</button>
+                </div>
+            `;
+            listEl.appendChild(div);
+        });
+    }
+
+    function toggleDone(id) {
+        const item = reminders.find(r => r.id === id);
+        if (item) {
+            item.done = !item.done;
+            saveData();
+            renderList();
+        }
+    }
+
+    function resetDailyChecks() {
+        reminders.forEach(r => {
+            if (r.type === currentTab) r.done = false;
+        });
+        saveData();
+        renderList();
+    }
+
+    // Modal & Form
+    function toggleFormFields() {
+        const type = document.getElementById('remType').value;
+        document.getElementById('timeGroup').style.display = type === 'daily' ? 'block' : 'none';
+        document.getElementById('dateGroup').style.display = type === 'monthly' ? 'block' : 'none';
+        document.getElementById('amountGroup').style.display = type === 'monthly' ? 'block' : 'none';
+    }
+
+    function openModal() {
+        document.getElementById('editId').value = '';
+        document.getElementById('modalHeading').innerText = 'নতুন ৰিমাইণ্ডাৰ যোগ কৰক';
+        document.getElementById('remTitle').value = '';
+        document.getElementById('remType').value = currentTab;
+        document.getElementById('remTime').value = '08:00';
+        document.getElementById('remDay').value = '5';
+        document.getElementById('remAmount').value = '';
+        toggleFormFields();
+        document.getElementById('remModal').classList.add('show');
+    }
+
+    function closeModal() {
+        document.getElementById('remModal').classList.remove('show');
+    }
+
+    function editReminder(id) {
+        const item = reminders.find(r => r.id === id);
+        if (!item) return;
+        document.getElementById('editId').value = item.id;
+        document.getElementById('modalHeading').innerText = 'ৰিমাইণ্ডাৰ সলনি কৰক';
+        document.getElementById('remTitle').value = item.title;
+        document.getElementById('remType').value = item.type;
+        if (item.type === 'daily') {
+            document.getElementById('remTime').value = item.time;
+        } else {
+            document.getElementById('remDay').value = item.day;
+            document.getElementById('remAmount').value = item.amount || '';
+        }
+        toggleFormFields();
+        document.getElementById('remModal').classList.add('show');
+    }
+
+    function saveReminder() {
+        const id = document.getElementById('editId').value;
+        const title = document.getElementById('remTitle').value.trim();
+        const type = document.getElementById('remType').value;
+        const time = document.getElementById('remTime').value;
+        const day = parseInt(document.getElementById('remDay').value) || 1;
+        const amount = document.getElementById('remAmount').value.trim();
+
+        if (!title) {
+            alert("অনুগ্ৰহ কৰি কামৰ নাম লিখক!");
+            return;
+        }
+
+        if (id) {
+            const index = reminders.findIndex(r => r.id == id);
+            if (index > -1) {
+                reminders[index] = { ...reminders[index], title, type, time, day, amount };
+            }
+        } else {
+            reminders.push({
+                id: Date.now(),
+                title,
+                type,
+                time,
+                day,
+                amount,
+                done: false
+            });
+        }
+
+        saveData();
+        switchTab(type);
+        closeModal();
+    }
+
+    function deleteReminder(id) {
+        if (confirm("আপুনি এই ৰিমাইণ্ডাৰটো ডিলিট কৰিব বিচাৰেনে?")) {
+            reminders = reminders.filter(r => r.id !== id);
+            saveData();
+            renderList();
+        }
+    }
+
+    // Live Clock & Beep Alarm
+    function playBeep() {
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(880, ctx.currentTime);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.4);
+        } catch (e) {}
+    }
+
+    function triggerAlarm(title) {
+        document.getElementById('alarmDesc').innerText = title;
+        document.getElementById('alarmBanner').style.display = 'block';
+        playBeep();
+        alarmInterval = setInterval(playBeep, 1500);
+    }
+
+    function stopAlarm() {
+        document.getElementById('alarmBanner').style.display = 'none';
+        if (alarmInterval) {
+            clearInterval(alarmInterval);
+            alarmInterval = null;
+        }
+    }
+
+    function updateClock() {
+        const now = new Date();
+        const options = { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+        document.getElementById('liveClock').innerText = now.toLocaleDateString('en-IN', options);
+
+        const hh = String(now.getHours()).padStart(2, '0');
+        const mm = String(now.getMinutes()).padStart(2, '0');
+        const currentHM = `${hh}:${mm}`;
+
+        if (currentHM !== lastTriggeredMinute && now.getSeconds() === 0) {
+            const dueItem = reminders.find(r => r.type === 'daily' && r.time === currentHM && !r.done);
+            if (dueItem) {
+                lastTriggeredMinute = currentHM;
+                triggerAlarm(dueItem.title);
+            }
+        }
+    }
+
+    // Initialize
+    updateWaterUI();
+    renderList();
+    setInterval(updateClock, 1000);
+    updateClock();
+</script>
+
+</body>
+</html>
