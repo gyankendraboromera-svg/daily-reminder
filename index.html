@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <title>Daily Life & Bills Reminder</title>
     <style>
         :root {
@@ -30,7 +33,7 @@
         header {
             background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: white;
-            padding: 18px 16px;
+            padding: 16px;
             text-align: center;
             position: sticky;
             top: 0;
@@ -38,13 +41,33 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.12);
         }
         header h1 {
-            font-size: 1.35rem;
+            font-size: 1.3rem;
             margin-bottom: 4px;
         }
         #liveClock {
-            font-size: 0.9rem;
+            font-size: 0.88rem;
             opacity: 0.92;
             font-weight: 500;
+        }
+        .notif-bar {
+            background: #eff6ff;
+            border-bottom: 1px solid #bfdbfe;
+            padding: 8px 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.82rem;
+            color: #1e40af;
+        }
+        .notif-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.8rem;
         }
         .container {
             max-width: 520px;
@@ -67,10 +90,10 @@
             margin-bottom: 10px;
         }
         .water-header h2 {
-            font-size: 1.1rem;
+            font-size: 1.05rem;
         }
         .water-count {
-            font-size: 1.25rem;
+            font-size: 1.2rem;
             font-weight: bold;
             background: rgba(255,255,255,0.2);
             padding: 4px 12px;
@@ -101,7 +124,7 @@
             border-radius: 10px;
             font-weight: 600;
             cursor: pointer;
-            font-size: 0.95rem;
+            font-size: 0.92rem;
         }
         .btn-drink {
             background: white;
@@ -110,7 +133,7 @@
         .btn-reset-water {
             background: rgba(255,255,255,0.2);
             color: white;
-            flex: 0.4;
+            flex: 0.35;
         }
         /* Tabs */
         .tabs {
@@ -126,7 +149,7 @@
             padding: 9px;
             border-radius: 9px;
             font-weight: 600;
-            font-size: 0.95rem;
+            font-size: 0.92rem;
             cursor: pointer;
             color: var(--muted);
             transition: 0.2s;
@@ -140,7 +163,7 @@
         .reminder-item {
             background: var(--card);
             border-radius: 14px;
-            padding: 14px;
+            padding: 13px;
             margin-bottom: 10px;
             display: flex;
             align-items: center;
@@ -162,34 +185,36 @@
         .rem-left {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
             flex: 1;
+            padding-right: 6px;
         }
         .rem-check {
-            width: 22px;
-            height: 22px;
+            width: 21px;
+            height: 21px;
             accent-color: var(--success);
             cursor: pointer;
+            flex-shrink: 0;
         }
         .rem-info {
             flex: 1;
         }
         .rem-title {
             font-weight: 600;
-            font-size: 1rem;
-            margin-bottom: 3px;
+            font-size: 0.96rem;
+            margin-bottom: 4px;
         }
         .rem-meta {
-            font-size: 0.82rem;
+            font-size: 0.8rem;
             color: var(--muted);
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
+            gap: 6px;
         }
         .badge {
             background: #eff6ff;
             color: var(--primary);
-            padding: 2px 8px;
+            padding: 2px 7px;
             border-radius: 6px;
             font-weight: 600;
         }
@@ -199,19 +224,24 @@
         }
         .rem-actions {
             display: flex;
-            gap: 6px;
+            gap: 5px;
+            flex-shrink: 0;
         }
         .icon-btn {
             background: #f1f5f9;
             border: none;
-            width: 34px;
-            height: 34px;
+            width: 32px;
+            height: 32px;
             border-radius: 8px;
             cursor: pointer;
-            font-size: 1rem;
+            font-size: 0.95rem;
             display: flex;
             align-items: center;
             justify-content: center;
+        }
+        .icon-btn.cal {
+            background: #dcfce7;
+            color: #15803d;
         }
         .icon-btn.del {
             color: var(--danger);
@@ -228,7 +258,7 @@
             border: none;
             padding: 13px 26px;
             border-radius: 30px;
-            font-size: 1rem;
+            font-size: 0.98rem;
             font-weight: 600;
             box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
             cursor: pointer;
@@ -307,6 +337,16 @@
             margin-top: 8px;
             cursor: pointer;
         }
+        .hint-box {
+            background: #fef9c3;
+            border: 1px solid #fde047;
+            color: #854d0e;
+            font-size: 0.8rem;
+            padding: 9px 12px;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
         /* Alarm Alert Banner */
         .alarm-banner {
             display: none;
@@ -343,6 +383,11 @@
     <div id="liveClock">Loading time...</div>
 </header>
 
+<div class="notif-bar" id="notifBar">
+    <span>ফোন লক থাকিলেও এলাৰ্ম পাবলৈ 🔔 বুটামত টিপক</span>
+    <button class="notif-btn" onclick="requestNotifPermission()">নোটিফিকেচন অন</button>
+</div>
+
 <div id="alarmBanner" class="alarm-banner">
     <h3 id="alarmTitle">⏰ ৰিমাইণ্ডাৰৰ সময় হৈছে!</h3>
     <p id="alarmDesc" style="margin-top:4px; font-size:0.95rem;"></p>
@@ -363,6 +408,10 @@
             <button class="water-btn btn-drink" onclick="addWater()">+ ১ গিলাচ পানী খালোঁ</button>
             <button class="water-btn btn-reset-water" onclick="resetWater()">Reset</button>
         </div>
+    </div>
+
+    <div class="hint-box">
+        💡 <b>টিপছ:</b> প্ৰতিটো কামৰ কাষত থকা <b>🔔</b> বুটামত টিপিলে আপোনাৰ ফোনৰ <b>Google Calendar</b>-ত স্থায়ী এলাৰ্ম চেট হ'ব, যি ফোন বন্ধ থাকিলেও শব্দ কৰিব।
     </div>
 
     <!-- Navigation Tabs -->
@@ -429,9 +478,9 @@
         { id: 10, title: "মোবাইল কিস্তি (Mobile EMI / Kisti)", type: "monthly", day: 7, amount: "", done: false },
         { id: 11, title: "প'ষ্ট অফিচ মাহিলী জমা (Post Office Deposit)", type: "monthly", day: 10, amount: "", done: false },
         { id: 12, title: "কাৰেণ্ট বিল (Electricity Bill)", type: "monthly", day: 15, amount: "", done: false },
-        { id: 13, title: "মোবাইল ৰিচাৰ্জ (Mobile Recharge)", type: "monthly", day: 25, amount: "₹299", done: false },
-        { id: 14, title: "বাইক চালান / ইন্স্যুৰেন্স পৰীক্ষা", type: "monthly", day: 28, amount: "", done: false },
-        { id: 15, title: "গেছ চিলিণ্ডাৰ বুকিং (Gas Booking)", type: "monthly", day: 20, amount: "", done: false }
+        { id: 13, title: "গেছ চিলিণ্ডাৰ বুকিং (Gas Booking)", type: "monthly", day: 20, amount: "", done: false },
+        { id: 14, title: "মোবাইল ৰিচাৰ্জ (Mobile Recharge)", type: "monthly", day: 25, amount: "₹299", done: false },
+        { id: 15, title: "বাইক চালান / ইন্স্যুৰেন্স পৰীক্ষা", type: "monthly", day: 28, amount: "", done: false }
     ];
 
     let reminders = JSON.parse(localStorage.getItem('mali_reminders')) || defaultReminders;
@@ -443,6 +492,64 @@
     function saveData() {
         localStorage.setItem('mali_reminders', JSON.stringify(reminders));
         localStorage.setItem('mali_water', waterCount);
+    }
+
+    // Browser Notification Permission
+    function requestNotifPermission() {
+        if (!("Notification" in window)) {
+            alert("আপোনাৰ ব্ৰাউজাৰে পোনপটীয়া নোটিফিকেচন ছাপৰ্ট নকৰে। তলৰ 🔔 বুটাম টিপি Google Calendar-ত এলাৰ্ম চেট কৰক।");
+            return;
+        }
+        Notification.requestPermission().then(permission => {
+            if (permission === "granted") {
+                document.getElementById('notifBar').style.display = 'none';
+                new Notification("Daily Reminder", { body: "নোটিফিকেচন সফলভাৱে অন কৰা হৈছে!" });
+            } else {
+                alert("নোটিফিকেচন অনুমতি দিয়া হোৱা নাই। তলৰ 🔔 বুটাম টিপি Google Calendar ব্যৱহাৰ কৰক।");
+            }
+        });
+    }
+
+    if ("Notification" in window && Notification.permission === "granted") {
+        document.getElementById('notifBar').style.display = 'none';
+    }
+
+    // One-Click Google Calendar Alarm Sync
+    function setPhoneAlarm(id) {
+        const item = reminders.find(r => r.id === id);
+        if (!item) return;
+
+        const now = new Date();
+        let startStr = "";
+        let endStr = "";
+        let recurRule = "";
+
+        const pad = n => String(n).padStart(2, '0');
+
+        if (item.type === 'daily') {
+            const [hh, mm] = item.time.split(':');
+            const y = now.getFullYear();
+            const m = pad(now.getMonth() + 1);
+            const d = pad(now.getDate());
+            startStr = `${y}${m}${d}T${hh}${mm}00`;
+            const endMin = (parseInt(mm) + 15) % 60;
+            const endHr = pad(parseInt(hh) + Math.floor((parseInt(mm) + 15) / 60));
+            endStr = `${y}${m}${d}T${endHr}${pad(endMin)}00`;
+            recurRule = "RRULE:FREQ=DAILY";
+        } else {
+            const y = now.getFullYear();
+            const m = pad(now.getMonth() + 1);
+            const d = pad(item.day);
+            startStr = `${y}${m}${d}T090000`;
+            endStr = `${y}${m}${d}T093000`;
+            recurRule = "RRULE:FREQ=MONTHLY";
+        }
+
+        const details = encodeURIComponent(`Daily Life Reminder: ${item.title} ${item.amount ? '(' + item.amount + ')' : ''}`);
+        const title = encodeURIComponent(`⏰ ${item.title}`);
+        const calUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startStr}/${endStr}&details=${details}&recur=${encodeURIComponent(recurRule)}`;
+        
+        window.open(calUrl, '_blank');
     }
 
     // Water Functions
@@ -525,8 +632,9 @@
                     </div>
                 </div>
                 <div class="rem-actions">
-                    <button class="icon-btn" onclick="editReminder(${item.id})">✏️</button>
-                    <button class="icon-btn del" onclick="deleteReminder(${item.id})">🗑️</button>
+                    <button class="icon-btn cal" title="ফোনৰ এলাৰ্মত চেট কৰক" onclick="setPhoneAlarm(${item.id})">🔔</button>
+                    <button class="icon-btn" title="সলনি কৰক" onclick="editReminder(${item.id})">✏️</button>
+                    <button class="icon-btn del" title="ডিলিট কৰক" onclick="deleteReminder(${item.id})">🗑️</button>
                 </div>
             `;
             listEl.appendChild(div);
@@ -654,6 +762,10 @@
         document.getElementById('alarmBanner').style.display = 'block';
         playBeep();
         alarmInterval = setInterval(playBeep, 1500);
+
+        if ("Notification" in window && Notification.permission === "granted") {
+            new Notification("⏰ Daily Life Reminder", { body: title });
+        }
     }
 
     function stopAlarm() {
