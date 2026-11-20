@@ -49,30 +49,37 @@
             opacity: 0.92;
             font-weight: 500;
         }
-        .notif-bar {
-            background: #eff6ff;
-            border-bottom: 1px solid #bfdbfe;
-            padding: 8px 14px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 0.82rem;
-            color: #1e40af;
-        }
-        .notif-btn {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 5px 12px;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            font-size: 0.8rem;
-        }
         .container {
             max-width: 520px;
             margin: 0 auto;
             padding: 14px;
+        }
+        /* One-Click All Alarm Setup Card */
+        .setup-all-card {
+            background: linear-gradient(135deg, #16a34a, #15803d);
+            color: white;
+            border-radius: 14px;
+            padding: 14px;
+            margin-bottom: 14px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(22, 163, 74, 0.25);
+        }
+        .setup-all-card p {
+            font-size: 0.85rem;
+            margin-bottom: 10px;
+            opacity: 0.95;
+        }
+        .setup-all-btn {
+            background: white;
+            color: #15803d;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            width: 100%;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
         }
         /* Water Tracker Card */
         .water-card {
@@ -239,10 +246,6 @@
             align-items: center;
             justify-content: center;
         }
-        .icon-btn.cal {
-            background: #dcfce7;
-            color: #15803d;
-        }
         .icon-btn.del {
             color: var(--danger);
             background: #fee2e2;
@@ -337,16 +340,6 @@
             margin-top: 8px;
             cursor: pointer;
         }
-        .hint-box {
-            background: #fef9c3;
-            border: 1px solid #fde047;
-            color: #854d0e;
-            font-size: 0.8rem;
-            padding: 9px 12px;
-            border-radius: 10px;
-            margin-bottom: 12px;
-            line-height: 1.4;
-        }
         /* Alarm Alert Banner */
         .alarm-banner {
             display: none;
@@ -383,11 +376,6 @@
     <div id="liveClock">Loading time...</div>
 </header>
 
-<div class="notif-bar" id="notifBar">
-    <span>ফোন লক থাকিলেও এলাৰ্ম পাবলৈ 🔔 বুটামত টিপক</span>
-    <button class="notif-btn" onclick="requestNotifPermission()">নোটিফিকেচন অন</button>
-</div>
-
 <div id="alarmBanner" class="alarm-banner">
     <h3 id="alarmTitle">⏰ ৰিমাইণ্ডাৰৰ সময় হৈছে!</h3>
     <p id="alarmDesc" style="margin-top:4px; font-size:0.95rem;"></p>
@@ -395,6 +383,12 @@
 </div>
 
 <div class="container">
+    <!-- One-Click Set All Alarms in Phone -->
+    <div class="setup-all-card">
+        <p>এটা-এটাকৈ চেট কৰিব নালাগে! তলৰ বুটামত টিপি সকলো এলাৰ্ম এবাৰতে ফোনৰ Calendar-ত ভৰাই লওক:</p>
+        <button class="setup-all-btn" onclick="downloadAllAlarmsICS()">🔔 সকলো এলাৰ্ম এবাৰতে ফোনত চেট কৰক</button>
+    </div>
+
     <!-- 12 Glasses Water Tracker -->
     <div class="water-card">
         <div class="water-header">
@@ -408,10 +402,6 @@
             <button class="water-btn btn-drink" onclick="addWater()">+ ১ গিলাচ পানী খালোঁ</button>
             <button class="water-btn btn-reset-water" onclick="resetWater()">Reset</button>
         </div>
-    </div>
-
-    <div class="hint-box">
-        💡 <b>টিপছ:</b> প্ৰতিটো কামৰ কাষত থকা <b>🔔</b> বুটামত টিপিলে আপোনাৰ ফোনৰ <b>Google Calendar</b>-ত স্থায়ী এলাৰ্ম চেট হ'ব, যি ফোন বন্ধ থাকিলেও শব্দ কৰিব।
     </div>
 
     <!-- Navigation Tabs -->
@@ -494,62 +484,62 @@
         localStorage.setItem('mali_water', waterCount);
     }
 
-    // Browser Notification Permission
-    function requestNotifPermission() {
-        if (!("Notification" in window)) {
-            alert("আপোনাৰ ব্ৰাউজাৰে পোনপটীয়া নোটিফিকেচন ছাপৰ্ট নকৰে। তলৰ 🔔 বুটাম টিপি Google Calendar-ত এলাৰ্ম চেট কৰক।");
-            return;
-        }
-        Notification.requestPermission().then(permission => {
-            if (permission === "granted") {
-                document.getElementById('notifBar').style.display = 'none';
-                new Notification("Daily Reminder", { body: "নোটিফিকেচন সফলভাৱে অন কৰা হৈছে!" });
-            } else {
-                alert("নোটিফিকেচন অনুমতি দিয়া হোৱা নাই। তলৰ 🔔 বুটাম টিপি Google Calendar ব্যৱহাৰ কৰক।");
-            }
-        });
-    }
-
-    if ("Notification" in window && Notification.permission === "granted") {
-        document.getElementById('notifBar').style.display = 'none';
-    }
-
-    // One-Click Google Calendar Alarm Sync
-    function setPhoneAlarm(id) {
-        const item = reminders.find(r => r.id === id);
-        if (!item) return;
-
+    // Download All Alarms as Single .ics Calendar File
+    function downloadAllAlarmsICS() {
         const now = new Date();
-        let startStr = "";
-        let endStr = "";
-        let recurRule = "";
-
         const pad = n => String(n).padStart(2, '0');
+        const y = now.getFullYear();
+        const m = pad(now.getMonth() + 1);
+        const d = pad(now.getDate());
 
-        if (item.type === 'daily') {
-            const [hh, mm] = item.time.split(':');
-            const y = now.getFullYear();
-            const m = pad(now.getMonth() + 1);
-            const d = pad(now.getDate());
-            startStr = `${y}${m}${d}T${hh}${mm}00`;
-            const endMin = (parseInt(mm) + 15) % 60;
-            const endHr = pad(parseInt(hh) + Math.floor((parseInt(mm) + 15) / 60));
-            endStr = `${y}${m}${d}T${endHr}${pad(endMin)}00`;
-            recurRule = "RRULE:FREQ=DAILY";
-        } else {
-            const y = now.getFullYear();
-            const m = pad(now.getMonth() + 1);
-            const d = pad(item.day);
-            startStr = `${y}${m}${d}T090000`;
-            endStr = `${y}${m}${d}T093000`;
-            recurRule = "RRULE:FREQ=MONTHLY";
-        }
+        let icsLines = [
+            "BEGIN:VCALENDAR",
+            "VERSION:2.0",
+            "PRODID:-//Daily Life Reminder//AS//EN",
+            "CALSCALE:GREGORIAN"
+        ];
 
-        const details = encodeURIComponent(`Daily Life Reminder: ${item.title} ${item.amount ? '(' + item.amount + ')' : ''}`);
-        const title = encodeURIComponent(`⏰ ${item.title}`);
-        const calUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startStr}/${endStr}&details=${details}&recur=${encodeURIComponent(recurRule)}`;
-        
-        window.open(calUrl, '_blank');
+        reminders.forEach(item => {
+            let dtStart = "";
+            let rrule = "";
+            if (item.type === 'daily') {
+                const [hh, mm] = item.time.split(':');
+                dtStart = `${y}${m}${d}T${hh}${mm}00`;
+                rrule = "RRULE:FREQ=DAILY";
+            } else {
+                const dayStr = pad(item.day);
+                dtStart = `${y}${m}${dayStr}T090000`;
+                rrule = "RRULE:FREQ=MONTHLY";
+            }
+
+            icsLines.push("BEGIN:VEVENT");
+            icsLines.push(`UID:rem-${item.id}-${Date.now()}@dailyreminder`);
+            icsLines.push(`DTSTAMP:${y}${m}${d}T080000`);
+            icsLines.push(`DTSTART:${dtStart}`);
+            icsLines.push(rrule);
+            icsLines.push(`SUMMARY:⏰ ${item.title}`);
+            icsLines.push(`DESCRIPTION:Daily Life & Bills Reminder`);
+            icsLines.push("BEGIN:VALARM");
+            icsLines.push("TRIGGER:-PT0M");
+            icsLines.push("ACTION:DISPLAY");
+            icsLines.push(`DESCRIPTION:${item.title}`);
+            icsLines.push("END:VALARM");
+            icsLines.push("END:VEVENT");
+        });
+
+        icsLines.push("END:VCALENDAR");
+
+        const blob = new Blob([icsLines.join("\r\n")], { type: "text/calendar;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "Daily_Life_Alarms.ics";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        alert("✅ ফাইলটো ডাউনলোড হৈছে! এতিয়া ডাউনলোড হোৱা 'Daily_Life_Alarms.ics' ফাইলটোত টিপি Google Calendar-ত 'Add All' কৰি দিয়ক— আটাইকেইটা এলাৰ্ম এবাৰতে চেট হৈ যাব।");
     }
 
     // Water Functions
@@ -632,7 +622,6 @@
                     </div>
                 </div>
                 <div class="rem-actions">
-                    <button class="icon-btn cal" title="ফোনৰ এলাৰ্মত চেট কৰক" onclick="setPhoneAlarm(${item.id})">🔔</button>
                     <button class="icon-btn" title="সলনি কৰক" onclick="editReminder(${item.id})">✏️</button>
                     <button class="icon-btn del" title="ডিলিট কৰক" onclick="deleteReminder(${item.id})">🗑️</button>
                 </div>
@@ -762,10 +751,6 @@
         document.getElementById('alarmBanner').style.display = 'block';
         playBeep();
         alarmInterval = setInterval(playBeep, 1500);
-
-        if ("Notification" in window && Notification.permission === "granted") {
-            new Notification("⏰ Daily Life Reminder", { body: title });
-        }
     }
 
     function stopAlarm() {
